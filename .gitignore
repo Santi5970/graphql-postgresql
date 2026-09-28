@@ -1,0 +1,20 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (contienen credenciales)
+.env
+
+# Schema exportado (se regenera al iniciar)
+docs/schema.graphql
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

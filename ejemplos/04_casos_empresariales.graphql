@@ -1,0 +1,240 @@
+# ============================================================
+# CASOS DE USO EMPRESARIALES REALES
+# Sistema: TechDist S.A. — Distribuidor de Tecnología
+# ============================================================
+
+# ══════════════════════════════════════════════════════════════
+# CASO 1: DASHBOARD GERENCIAL
+# Una sola query trae todas las métricas del negocio
+# ══════════════════════════════════════════════════════════════
+query DashboardGerencial {
+  # Total clientes activos
+  totalClientes: clientes(condition: { activo: true }) {
+    totalCount
+  }
+
+  # Total productos activos
+  totalProductos: productos(condition: { activo: true }) {
+    totalCount
+  }
+
+  # Pedidos pendientes de atender
+  pedidosPendientes: pedidos(condition: { estado: "pendiente" }) {
+    totalCount
+  }
+
+  # Últimos 5 pedidos
+  ultimosPedidos: pedidos(first: 5, orderBy: FECHA_PEDIDO_DESC) {
+    nodes {
+      numeroPedido
+      estado
+      total
+      fechaPedido
+      cliente {
+        nombre
+        empresa
+      }
+    }
+  }
+
+  # Productos con bajo stock
+  alertasStock: vistaProductosBajoStocks {
+    nodes {
+      nombre
+      stock
+      stockMinimo
+      diferencia
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# CASO 2: CRM — PERFIL COMPLETO DE CLIENTE
+# Historial completo antes de llamar al cliente
+# ══════════════════════════════════════════════════════════════
+query PerfilClienteCRM {
+  cliente(id: 2) {
+    nombre
+    apellido
+    empresa
+    email
+    telefono
+    ciudad
+    pais
+    creadoEn
+    pedidos(orderBy: FECHA_PEDIDO_DESC) {
+      totalCount
+      nodes {
+        numeroPedido
+        estado
+        fechaPedido
+        total
+        empleado {
+          nombre
+          apellido
+        }
+        detallePedidos {
+          totalCount
+          nodes {
+            cantidad
+            precioUnitario
+            subtotal
+            producto {
+              codigo
+              nombre
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# CASO 3: INVENTARIO — REPORTE COMPLETO DE ALMACÉN
+# ══════════════════════════════════════════════════════════════
+query ReporteInventario {
+  # Todos los productos con su stock actual
+  productos(condition: { activo: true }, orderBy: STOCK_ASC) {
+    totalCount
+    nodes {
+      codigo
+      nombre
+      stock
+      stockMinimo
+      precio
+      categoriasProducto {
+        nombre
+      }
+    }
+  }
+
+  # Los que necesitan reabastecerse YA
+  stockCritico: vistaProductosBajoStocks {
+    nodes {
+      codigo
+      nombre
+      stock
+      stockMinimo
+      diferencia
+      categoria
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# CASO 4: FLUJO DE VENTAS (3 mutations en secuencia)
+# Cotización → Pedido confirmado → Enviado
+# ══════════════════════════════════════════════════════════════
+
+# PASO 1: Crear cotización
+mutation Paso1_CrearCotizacion {
+  createPedido(input: {
+    pedido: {
+      numeroPedido: "PED-2024-007"
+      clienteId:    1
+      empleadoId:   2
+      estado:       "pendiente"
+      fechaEntrega: "2024-05-10"
+      notas:        "Cotización para equipar nueva sucursal"
+    }
+  }) {
+    pedido {
+      id
+      numeroPedido
+      estado
+      cliente { nombre empresa }
+    }
+  }
+}
+
+# PASO 2: Agregar productos (repetir por cada línea)
+mutation Paso2_AgregarProducto {
+  createDetallePedido(input: {
+    detallePedido: {
+      pedidoId:       7
+      productoId:     2
+      cantidad:       3
+      precioUnitario: "950"
+      descuento:      "5"
+    }
+  }) {
+    detallePedido {
+      cantidad
+      subtotal
+      producto { nombre }
+    }
+  }
+}
+
+# PASO 3: Cliente aprueba → confirmar
+mutation Paso3_ConfirmarPedido {
+  updatePedidoById(input: {
+    id: 7
+    pedidoPatch: { estado: "confirmado" }
+  }) {
+    pedido {
+      numeroPedido
+      estado
+      total
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# CASO 5: RRHH — REPORTE DE NÓMINA POR DEPARTAMENTO
+# Costo de personal agrupado por área
+# ══════════════════════════════════════════════════════════════
+query ReporteNomina {
+  departamentos(
+    condition: { activo: true }
+    orderBy: NOMBRE_ASC
+  ) {
+    nodes {
+      nombre
+      presupuesto
+      empleados(
+        condition: { activo: true }
+        orderBy: SALARIO_DESC
+      ) {
+        totalCount
+        nodes {
+          nombre
+          apellido
+          cargo
+          salario
+          fechaIngreso
+        }
+      }
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# CASO 6: E-COMMERCE — CATÁLOGO CON PAGINACIÓN
+# Búsqueda de productos con paginación para tienda online
+# ══════════════════════════════════════════════════════════════
+query CatalogoPaginado {
+  productos(
+    condition: { activo: true }
+    orderBy: PRECIO_ASC
+    first: 10
+    offset: 0
+  ) {
+    totalCount
+    pageInfo {
+      hasNextPage
+    }
+    nodes {
+      id
+      codigo
+      nombre
+      descripcion
+      precio
+      stock
+      categoriasProducto {
+        nombre
+      }
+    }
+  }
+}

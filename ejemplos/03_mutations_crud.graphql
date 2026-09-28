@@ -1,0 +1,295 @@
+# ============================================================
+# MUTATIONS — Crear, Actualizar y Eliminar datos
+# Sistema: TechDist S.A.
+# ============================================================
+# PostGraphile genera automáticamente:
+#   createEmpleado         → INSERT
+#   updateEmpleado(id)     → UPDATE por nodeId
+#   updateEmpleadoById     → UPDATE por id numérico
+#   deleteEmpleadoById     → DELETE por id numérico
+# ============================================================
+
+# ══════════════════════════════════════════════════════════════
+# EMPLEADOS
+# ══════════════════════════════════════════════════════════════
+
+# Contratar nuevo empleado
+mutation ContratarEmpleado {
+  createEmpleado(input: {
+    empleado: {
+      nombre:         "Andrea"
+      apellido:       "Vargas"
+      email:          "andrea.vargas@techdist.com"
+      telefono:       "555-3001"
+      cargo:          "Analista de Datos"
+      salario:        "3200"
+      fechaIngreso:   "2024-04-15"
+      departamentoId: 3
+      activo:         true
+    }
+  }) {
+    empleado {
+      id
+      nombre
+      apellido
+      cargo
+      salario
+      departamento {
+        nombre
+      }
+    }
+  }
+}
+
+# Promover empleado (cambiar cargo y salario)
+mutation PromocionEmpleado {
+  updateEmpleadoById(input: {
+    id: 7
+    empleadoPatch: {
+      cargo:   "Arquitecto de Software"
+      salario: "4800"
+    }
+  }) {
+    empleado {
+      id
+      nombre
+      apellido
+      cargo
+      salario
+    }
+  }
+}
+
+# Dar de baja a un empleado (borrado lógico)
+mutation BajaEmpleado {
+  updateEmpleadoById(input: {
+    id: 5
+    empleadoPatch: { activo: false }
+  }) {
+    empleado {
+      id
+      nombre
+      apellido
+      activo
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# PRODUCTOS
+# ══════════════════════════════════════════════════════════════
+
+# Agregar nuevo producto al catálogo
+mutation AgregarProducto {
+  createProducto(input: {
+    producto: {
+      codigo:      "LAP-005"
+      nombre:      "Laptop ASUS VivoBook 15"
+      descripcion: "Intel Core i5, 8GB RAM, 512GB SSD, Windows 11 Home"
+      precio:      "780"
+      stock:       20
+      stockMinimo: 5
+      categoriaId: 1
+      activo:      true
+    }
+  }) {
+    producto {
+      id
+      codigo
+      nombre
+      precio
+      stock
+      categoriasProducto {
+        nombre
+      }
+    }
+  }
+}
+
+# Actualizar precio y stock tras recepción de mercancía
+mutation ActualizarProducto {
+  updateProductoById(input: {
+    id: 1
+    productoPatch: {
+      precio: "899"
+      stock:  30
+    }
+  }) {
+    producto {
+      id
+      codigo
+      nombre
+      precio
+      stock
+    }
+  }
+}
+
+# Descontinuar un producto
+mutation DescontinuarProducto {
+  updateProductoById(input: {
+    id: 15
+    productoPatch: { activo: false }
+  }) {
+    producto {
+      id
+      codigo
+      nombre
+      activo
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# CLIENTES
+# ══════════════════════════════════════════════════════════════
+
+# Registrar nuevo cliente
+mutation RegistrarCliente {
+  createCliente(input: {
+    cliente: {
+      nombre:    "Gabriela"
+      apellido:  "Ortiz"
+      empresa:   "Farmacia San José S.A."
+      email:     "gabriela.ortiz@farmaciasj.com"
+      telefono:  "555-4001"
+      direccion: "Calle Salud 200, Local 5"
+      ciudad:    "Querétaro"
+      pais:      "México"
+      activo:    true
+    }
+  }) {
+    cliente {
+      id
+      nombre
+      apellido
+      empresa
+      email
+      ciudad
+    }
+  }
+}
+
+# Actualizar datos de contacto
+mutation ActualizarCliente {
+  updateClienteById(input: {
+    id: 4
+    clientePatch: {
+      telefono:  "555-9999"
+      direccion: "Polanco, Av. Presidente Masaryk 200, Piso 8"
+      ciudad:    "Ciudad de México"
+    }
+  }) {
+    cliente {
+      id
+      nombre
+      apellido
+      telefono
+      direccion
+      ciudad
+    }
+  }
+}
+
+# ══════════════════════════════════════════════════════════════
+# PEDIDOS
+# ══════════════════════════════════════════════════════════════
+
+# Crear un nuevo pedido
+mutation CrearPedido {
+  createPedido(input: {
+    pedido: {
+      numeroPedido: "PED-2024-006"
+      clienteId:    8
+      empleadoId:   2
+      estado:       "pendiente"
+      fechaEntrega: "2024-05-01"
+      notas:        "Cliente solicita factura a nombre personal"
+    }
+  }) {
+    pedido {
+      id
+      numeroPedido
+      estado
+      fechaPedido
+      cliente {
+        nombre
+        apellido
+      }
+    }
+  }
+}
+
+# Agregar un producto al pedido
+mutation AgregarItemPedido {
+  createDetallePedido(input: {
+    detallePedido: {
+      pedidoId:       6
+      productoId:     3
+      cantidad:       2
+      precioUnitario: "1250"
+      descuento:      "0"
+    }
+  }) {
+    detallePedido {
+      id
+      cantidad
+      precioUnitario
+      descuento
+      subtotal
+      producto {
+        nombre
+        codigo
+      }
+    }
+  }
+}
+
+# Cambiar estado de un pedido a "confirmado"
+mutation ConfirmarPedido {
+  updatePedidoById(input: {
+    id: 5
+    pedidoPatch: { estado: "confirmado" }
+  }) {
+    pedido {
+      id
+      numeroPedido
+      estado
+      total
+    }
+  }
+}
+
+# Registrar envío del pedido
+mutation EnviarPedido {
+  updatePedidoById(input: {
+    id: 4
+    pedidoPatch: {
+      estado:       "enviado"
+      fechaEntrega: "2024-04-12"
+      notas:        "Enviado vía FedEx, guía: FDX-789456123"
+    }
+  }) {
+    pedido {
+      id
+      numeroPedido
+      estado
+      fechaEntrega
+      notas
+    }
+  }
+}
+
+# Eliminar un ítem del detalle (borrado físico)
+mutation EliminarItemPedido {
+  deleteDetallePedidoById(input: { id: 1 }) {
+    deletedDetallePedidoId
+    detallePedido {
+      cantidad
+      subtotal
+      producto {
+        nombre
+      }
+    }
+  }
+}

@@ -1,0 +1,165 @@
+# ============================================================
+# QUERIES BÁSICAS — Consultas de lectura
+# Sistema: TechDist S.A.
+# ============================================================
+# NOMBRES REALES DEL SCHEMA (generados por PostGraphile):
+#   allEmpleados      →  empleados
+#   allProductos      →  productos
+#   allClientes       →  clientes
+#   allDepartamentos  →  departamentos
+#   allPedidos        →  pedidos
+#   filter: {}        →  condition: {}
+# ============================================================
+
+# ──────────────────────────────────────────────────────────────
+# 1. Listar todos los departamentos
+# Caso de uso: Panel de administración de RRHH
+# ──────────────────────────────────────────────────────────────
+query ListarDepartamentos {
+  departamentos {
+    nodes {
+      id
+      nombre
+      descripcion
+      presupuesto
+      activo
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 2. Listar empleados con su departamento (JOIN automático)
+# Caso de uso: Directorio corporativo de la empresa
+# ──────────────────────────────────────────────────────────────
+query DirectorioCorporativo {
+  empleados(orderBy: APELLIDO_ASC) {
+    totalCount
+    nodes {
+      id
+      nombre
+      apellido
+      email
+      cargo
+      salario
+      fechaIngreso
+      activo
+      departamento {
+        nombre
+      }
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 3. Buscar empleado por ID
+# Caso de uso: Ficha de empleado en el sistema de RRHH
+# ──────────────────────────────────────────────────────────────
+query FichaEmpleado {
+  empleado(id: 1) {
+    id
+    nombre
+    apellido
+    email
+    telefono
+    cargo
+    salario
+    departamento {
+      nombre
+      presupuesto
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 4. Catálogo de productos con categoría
+# Caso de uso: Tienda en línea o catálogo para vendedores
+# ──────────────────────────────────────────────────────────────
+query CatalogoProductos {
+  productos(
+    condition: { activo: true }
+    orderBy: NOMBRE_ASC
+  ) {
+    totalCount
+    nodes {
+      id
+      codigo
+      nombre
+      descripcion
+      precio
+      stock
+      stockMinimo
+      categoriasProducto {
+        nombre
+      }
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 5. Lista de clientes activos
+# Caso de uso: CRM - gestión de cartera de clientes
+# ──────────────────────────────────────────────────────────────
+query ListaClientes {
+  clientes(
+    condition: { activo: true }
+    orderBy: NOMBRE_ASC
+  ) {
+    totalCount
+    nodes {
+      id
+      nombre
+      apellido
+      empresa
+      email
+      ciudad
+      pais
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 6. Paginación de productos (5 por página)
+# Caso de uso: Tabla con paginación en dashboard de inventario
+# ──────────────────────────────────────────────────────────────
+query ProductosPaginados {
+  productos(first: 5, offset: 0, orderBy: ID_ASC) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      id
+      codigo
+      nombre
+      precio
+      stock
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 7. Todos los pedidos con su cliente y vendedor
+# Caso de uso: Panel de seguimiento de pedidos
+# ──────────────────────────────────────────────────────────────
+query ListarPedidos {
+  pedidos(orderBy: FECHA_PEDIDO_DESC) {
+    totalCount
+    nodes {
+      id
+      numeroPedido
+      estado
+      fechaPedido
+      total
+      cliente {
+        nombre
+        apellido
+        empresa
+      }
+      empleado {
+        nombre
+        apellido
+      }
+    }
+  }
+}

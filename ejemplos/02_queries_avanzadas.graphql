@@ -1,0 +1,177 @@
+# ============================================================
+# QUERIES AVANZADAS — Relaciones y navegación
+# Sistema: TechDist S.A.
+# ============================================================
+
+# ──────────────────────────────────────────────────────────────
+# 1. Pedido completo con cliente, vendedor y líneas de detalle
+# Caso de uso: Vista 360° de una orden en el sistema de ventas
+# ──────────────────────────────────────────────────────────────
+query PedidoCompleto {
+  pedido(id: 3) {
+    id
+    numeroPedido
+    estado
+    fechaPedido
+    fechaEntrega
+    total
+    notas
+    cliente {
+      nombre
+      apellido
+      empresa
+      email
+      telefono
+      ciudad
+    }
+    empleado {
+      nombre
+      apellido
+      cargo
+    }
+    detallePedidos {
+      totalCount
+      nodes {
+        cantidad
+        precioUnitario
+        descuento
+        subtotal
+        producto {
+          codigo
+          nombre
+          categoriasProducto {
+            nombre
+          }
+        }
+      }
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 2. Pedidos filtrados por estado
+# Caso de uso: Panel de seguimiento en operaciones
+# ──────────────────────────────────────────────────────────────
+query PedidosPendientes {
+  pedidos(
+    condition: { estado: "pendiente" }
+    orderBy: FECHA_PEDIDO_DESC
+  ) {
+    totalCount
+    nodes {
+      id
+      numeroPedido
+      estado
+      fechaPedido
+      total
+      cliente {
+        nombre
+        apellido
+        empresa
+      }
+      empleado {
+        nombre
+        apellido
+      }
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 3. Historial de pedidos de un cliente específico
+# Caso de uso: Portal de cliente — "Mis pedidos"
+# ──────────────────────────────────────────────────────────────
+query HistorialPedidosCliente {
+  cliente(id: 2) {
+    nombre
+    apellido
+    empresa
+    email
+    pedidos(orderBy: FECHA_PEDIDO_DESC) {
+      totalCount
+      nodes {
+        numeroPedido
+        estado
+        fechaPedido
+        total
+        detallePedidos {
+          totalCount
+          nodes {
+            cantidad
+            subtotal
+            producto {
+              nombre
+              codigo
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 4. Empleados de un departamento
+# Caso de uso: Reporte de equipo de ventas
+# ──────────────────────────────────────────────────────────────
+query EmpleadosPorDepartamento {
+  departamento(id: 1) {
+    nombre
+    presupuesto
+    empleados {
+      totalCount
+      nodes {
+        nombre
+        apellido
+        cargo
+        salario
+        pedidos {
+          totalCount
+          nodes {
+            numeroPedido
+            estado
+            total
+          }
+        }
+      }
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 5. Productos con bajo stock (vista de PostgreSQL)
+# Caso de uso: Alerta automática al equipo de almacén
+# ──────────────────────────────────────────────────────────────
+query AlertaBajoStock {
+  vistaProductosBajoStocks {
+    nodes {
+      id
+      codigo
+      nombre
+      stock
+      stockMinimo
+      diferencia
+      categoria
+    }
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# 6. Resumen de pedidos desde la vista
+# Caso de uso: Dashboard gerencial con métricas de ventas
+# ──────────────────────────────────────────────────────────────
+query ResumenPedidos {
+  vistaPedidosCompletos(orderBy: FECHA_PEDIDO_DESC) {
+    nodes {
+      id
+      numeroPedido
+      estado
+      fechaPedido
+      total
+      clienteNombre
+      clienteEmpresa
+      vendedor
+      cantidadItems
+    }
+  }
+}
